@@ -1,38 +1,43 @@
 addListeners();
 
 
-function add(x, y) {
-    return x + y;
+let display_value = '';
+let actual_value = '';
+
+let number_dot = true;
+
+function updateDisplay() {
+    const text = document.getElementById('display_text');
+    text.innerHTML = display_value;
 }
 
-function subtract(x, y) {
-    return x - y;
+function appendDisplayValue(i) {
+    display_value += i;
+    updateDisplay();
 }
 
-function multiply(x, y) {
-    return x * y;
+function appendActualValue(i) {
+    actual_value += i;
 }
 
-function divide(x, y) {
-    return x / y;
+function isDisplayOperator() {
+    return display_value.toString().charAt(display_value.length-1) == '>';
 }
 
-function operate(o, x, y) {
-    if(o == '+') {
-        return add(x, y);
-    }
-    else if(o == '-') {
-        return subtract(x, y);
-    }
-    else if(o == '*') {
-        return multiply(x, y);
-    }
-    else if(o == '/') {
-        return divide(x, y);
-    }
-    else {
-        return 'ERROR';
-    }
+function isDisplayDot() {
+    return display_value.toString().charAt(display_value.length-1) == '.';
+}
+
+function isDisplayEmpty() {
+    return display_value.toString() == '';
+}
+
+function isDisplayNumber() {
+    return !( isDisplayOperator() || isDisplayDot() || isDisplayEmpty() );
+}
+
+function isDisplayFull() {
+    return actual_value.length > 13;
 }
 
 
@@ -42,40 +47,78 @@ function addListeners() {
     const buttonDigits = document.querySelectorAll('.digit');
     buttonDigits.forEach((button) => {
         button.addEventListener('click', (e) => {
-            updateDisplayValue(e.target.textContent);
+            if( !(isDisplayFull()) ) {
+                appendDisplayValue(e.target.textContent);
+                appendActualValue(e.target.textContent);
+            }
         });
+    });
+
+    const buttonDot = document.querySelector('.dot');
+    buttonDot.addEventListener('click', (e) => {
+        if( !(isDisplayFull()) && isDisplayNumber() && number_dot ) {
+            number_dot = false;
+            appendDisplayValue(e.target.textContent);
+            appendActualValue(e.target.textContent);
+        }
     });
 
     const buttonOperators = document.querySelectorAll('.operator');
     buttonOperators.forEach((button) => {
         button.addEventListener('click', (e) => {
-            updateDisplayValue(e.target.textContent);
+            if( !(isDisplayFull()) && isDisplayNumber() ) {
+                number_dot = true;
+                appendDisplayValue('<span class="accent"> ' + e.target.textContent + ' </span>');
+                switch(e.target.textContent) {
+                    case '+':
+                        appendActualValue(' + ');
+                        break;
+                    case '-':
+                        appendActualValue(' - ');
+                        break;
+                    case 'x':
+                        appendActualValue(' * ');
+                        break;
+                    case '÷':
+                        appendActualValue(' / ');
+                        break;
+                    default:
+                        console.log('Something went wrong');
+                }
+            }
         });
     });
 
     const buttonAC = document.getElementById('btn_ac');
     buttonAC.addEventListener('click', (e) => {
+        number_dot = true;
         display_value = '';
+        actual_value = '';
         updateDisplay();
     });
 
     const buttonCE = document.getElementById('btn_ce');
     buttonCE.addEventListener('click', (e) => {
-        display_value = display_value.slice(0, -1);
+        if( isDisplayOperator() ) {
+            number_dot = false;
+            display_value = display_value.toString().slice(0, -31);
+            if( isDisplayNumber() ) {
+                number_dot = true;
+            }
+        } else if( isDisplayDot() ) {
+            number_dot = true;
+            display_value = display_value.toString().slice(0, -1);
+        } else {
+            display_value = display_value.toString().slice(0, -1);
+        }
+        actual_value = actual_value.toString().slice(0, -1);
         updateDisplay();
     });
-}
 
-
-
-let display_value = '';
-
-function updateDisplay() {
-    const text = document.getElementById('display_text');
-    text.textContent = display_value;
-}
-
-function updateDisplayValue(i) {
-    display_value += i;
-    updateDisplay();
+    const buttonEquals = document.getElementById('btn_equals');
+    buttonEquals.addEventListener('click', (e) => {
+        actual_value = Math.round(eval(actual_value) * 100) / 100;
+        display_value = actual_value;
+        updateDisplay();
+    });
 }

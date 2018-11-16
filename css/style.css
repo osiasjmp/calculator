@@ -61,7 +61,11 @@ body {
     opacity: 0.8;
 }
 
-.digit {
+.accent {
+    color: #566573;
+}
+
+.digit, .dot {
     background-color: #d5d8dc;
     box-shadow: 2px 2px 4px #d5d8dc;
 }
